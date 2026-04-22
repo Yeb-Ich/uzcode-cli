@@ -4,7 +4,7 @@ import axios from 'axios';
 
 type Props = {
 	model: string;
-	version: string;
+	currentVersion: string;
 };
 
 const LOGO = [
@@ -61,12 +61,11 @@ function compareSemver(a: string, b: string): number {
 	return aPatch - bPatch;
 }
 
-export default function Banner({model, version}: Props) {
+export default function Banner({model, currentVersion}: Props) {
 	const [activeModel, setActiveModel] = useState<string | undefined>();
 	const [serverOnline, setServerOnline] = useState(false);
 	const [updateAvailable, setUpdateAvailable] = useState<string | undefined>();
-	const [latestRelease, setLatestRelease] = useState<string | undefined>();
-	const [updateError, setUpdateError] = useState<string | undefined>();
+	const [githubVersion, setGithubVersion] = useState<string | undefined>();
 
 	useEffect(() => {
 		const fetchStatus = async () => {
@@ -92,30 +91,20 @@ export default function Banner({model, version}: Props) {
 				});
 				const data = response.data as {tag_name?: string};
 				if (data.tag_name) {
-					setLatestRelease(data.tag_name);
-					if (compareSemver(data.tag_name, version) > 0) {
+					setGithubVersion(data.tag_name);
+					if (compareSemver(data.tag_name, currentVersion) > 0) {
 						setUpdateAvailable(data.tag_name);
 					}
 				}
-			} catch (error_) {
-				const error = error_ as {response?: {status?: number}; message?: string};
-				const status = error.response?.status;
-				if (status === 404) {
-					setUpdateError('No releases yet');
-				} else {
-					setUpdateError(`Check failed (${error.message ?? 'network'})`);
-				}
+			} catch {
+				// Intentionally keep banner clean when GitHub is unavailable.
 			}
 		};
 
 		void fetchStatus();
-	}, [version]);
+	}, [currentVersion]);
 
-	const modelDisplay = serverOnline
-		? (activeModel ?? model)
-		: 'Server Offline';
-
-	const serverColor = serverOnline ? 'green' : 'red';
+	const modelDisplay = serverOnline ? (activeModel ?? model) : 'Server Offline';
 
 	return (
 		<Box flexDirection="column" marginBottom={1}>
@@ -133,32 +122,22 @@ export default function Banner({model, version}: Props) {
 							</Text>
 						))}
 					</Box>
-					<Box flexDirection="column" justifyContent="center">
-						<Text color="magenta" bold>
-							{' '}_ UzCode (v{version})
-						</Text>
+					<Box flexDirection="column" justifyContent="flex-start">
 						<Text>{' '}</Text>
-						<Text color={serverColor}>
+						{updateAvailable && (
+							<Text color="yellow" bold>
+								{' '}Update Available: {updateAvailable}
+							</Text>
+						)}
+						{githubVersion && (
+							<Text color="magenta" bold>
+								{' '}Version: {githubVersion}
+							</Text>
+						)}
+						<Text color="magenta">
 							{' '}{serverOnline ? 'Online' : 'Offline'} | {modelDisplay}
 						</Text>
 						<Text>{' '}</Text>
-						{updateAvailable ? (
-							<Text color="yellow">
-								{' '}Update Available: {updateAvailable}
-							</Text>
-						) : latestRelease ? (
-							<Text color="gray">
-								{' '}Latest release: {latestRelease}
-							</Text>
-						) : updateError ? (
-							<Text color="gray">
-								{' '}{updateError}
-							</Text>
-						) : (
-							<Text color="gray">{' '}Up to date</Text>
-						)}
-						<Text>{' '}</Text>
-						<Text color="gray">{' '}~</Text>
 					</Box>
 				</Box>
 			</Box>

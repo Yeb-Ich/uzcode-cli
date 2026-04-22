@@ -151,7 +151,7 @@ export default function App({
 
 	return (
 		<Box flexDirection="column" padding={1}>
-			<Banner model={model} version={VERSION} />
+			<Banner model={model} currentVersion={VERSION} />
 
 			<LogPanel items={logs} />
 			<ApprovalPanel pending={pendingApproval} />
