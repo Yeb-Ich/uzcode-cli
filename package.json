@@ -11,7 +11,7 @@
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"start": "node dist/cli.js",
-		"bundle": "pkg . --output releases/uzcode --targets node18-linux-x64",
+		"bundle": "@yao-pkg/pkg . --output releases/uzcode --targets node18-linux-x64 --public",
 		"test": "prettier --check . && xo && ava"
 	},
 	"pkg": {
@@ -39,8 +39,10 @@
 		"@sindresorhus/tsconfig": "^3.0.1",
 		"@types/react": "^18.0.32",
 		"@vdemedes/prettier-config": "^2.0.1",
+		"@yao-pkg/pkg": "^6.18.1",
 		"ava": "^5.2.0",
 		"chalk": "^5.2.0",
+		"esbuild": "^0.28.0",
 		"eslint-config-xo-react": "^0.27.0",
 		"eslint-plugin-react": "^7.32.2",
 		"eslint-plugin-react-hooks": "^4.6.0",

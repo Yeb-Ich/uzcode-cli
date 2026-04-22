@@ -35,9 +35,12 @@ const GITHUB_RELEASES_URL =
 function compareSemver(a: string, b: string): number {
 	const parse = (v: string) =>
 		v
-			.replace(/^v/, '')
+			.replace(/^v/i, '')
 			.split('.')
-			.map(Number);
+			.map(part => {
+				const match = part.match(/^\d+/);
+				return match ? Number(match[0]) : 0;
+			});
 	const aParts = parse(a);
 	const bParts = parse(b);
 	const aMajor = aParts[0] ?? 0;
@@ -62,6 +65,8 @@ export default function Banner({model, version}: Props) {
 	const [activeModel, setActiveModel] = useState<string | undefined>();
 	const [serverOnline, setServerOnline] = useState(false);
 	const [updateAvailable, setUpdateAvailable] = useState<string | undefined>();
+	const [latestRelease, setLatestRelease] = useState<string | undefined>();
+	const [updateError, setUpdateError] = useState<string | undefined>();
 
 	useEffect(() => {
 		const fetchStatus = async () => {
@@ -81,13 +86,25 @@ export default function Banner({model, version}: Props) {
 
 			// Check GitHub for newer release
 			try {
-				const response = await axios.get(GITHUB_RELEASES_URL, {timeout: 5000});
+				const response = await axios.get(GITHUB_RELEASES_URL, {
+					timeout: 5000,
+					headers: {'User-Agent': 'uzcode-cli'},
+				});
 				const data = response.data as {tag_name?: string};
-				if (data.tag_name && compareSemver(data.tag_name, version) > 0) {
-					setUpdateAvailable(data.tag_name);
+				if (data.tag_name) {
+					setLatestRelease(data.tag_name);
+					if (compareSemver(data.tag_name, version) > 0) {
+						setUpdateAvailable(data.tag_name);
+					}
 				}
-			} catch {
-				// Silently ignore — no internet or no releases yet
+			} catch (error_) {
+				const error = error_ as {response?: {status?: number}; message?: string};
+				const status = error.response?.status;
+				if (status === 404) {
+					setUpdateError('No releases yet');
+				} else {
+					setUpdateError(`Check failed (${error.message ?? 'network'})`);
+				}
 			}
 		};
 
@@ -128,6 +145,14 @@ export default function Banner({model, version}: Props) {
 						{updateAvailable ? (
 							<Text color="yellow">
 								{' '}Update Available: {updateAvailable}
+							</Text>
+						) : latestRelease ? (
+							<Text color="gray">
+								{' '}Latest release: {latestRelease}
+							</Text>
+						) : updateError ? (
+							<Text color="gray">
+								{' '}{updateError}
 							</Text>
 						) : (
 							<Text color="gray">{' '}Up to date</Text>

@@ -1,5 +1,8 @@
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {Box} from 'ink';
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import type {LogItem, PendingApproval, Role, AppProps} from './types/index.js';
 import {createClient} from './agent/client.js';
 import {SYSTEM_PROMPT} from './agent/prompt.js';
@@ -10,7 +13,28 @@ import SpinnerRow from './ui/spinner-row.js';
 import PromptInput from './ui/prompt-input.js';
 import Banner from './ui/banner.js';
 
-const VERSION = '0.14.5';
+function getVersion(): string {
+	const candidates = [
+		path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'),
+		path.join(process.cwd(), 'package.json'),
+	];
+
+	for (const pkgPath of candidates) {
+		try {
+			const raw = fs.readFileSync(pkgPath, 'utf8');
+			const pkg = JSON.parse(raw) as {version: string};
+			if (pkg.version) {
+				return pkg.version;
+			}
+		} catch {
+			continue;
+		}
+	}
+
+	return '0.0.0';
+}
+
+const VERSION = getVersion();
 
 export default function App({
 	initialPrompt = '',
