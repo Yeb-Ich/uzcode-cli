@@ -1,0 +1,35 @@
+import React from 'react';
+import {Box, Text} from 'ink';
+import type {LogItem} from '../types/index.js';
+
+const colorByType: Record<LogItem['type'], string> = {
+	reasoning: 'gray',
+	assistant: 'cyan',
+	tool: 'yellow',
+	error: 'red',
+	system: 'green',
+};
+
+type Props = {
+	items: LogItem[];
+};
+
+export default function LogPanel({items}: Props) {
+	return (
+		<>
+			{items.map(item => (
+				<Box
+					key={item.id}
+					flexDirection="column"
+					borderStyle="round"
+					borderColor={colorByType[item.type]}
+					paddingX={1}
+					marginBottom={1}
+				>
+					<Text color={colorByType[item.type]}>{item.title}</Text>
+					<Text>{item.content}</Text>
+				</Box>
+			))}
+		</>
+	);
+}
