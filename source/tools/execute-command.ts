@@ -4,23 +4,23 @@ import type {ToolHandler, ToolContext} from '../types/index.js';
 
 const exec = promisify(execCallback);
 
-export const executeCommand: ToolHandler = async (
+export const shellExecute: ToolHandler = async (
 	arguments_,
 	context: ToolContext,
 ) => {
 	if (typeof arguments_['command'] !== 'string' || arguments_['command'].trim().length === 0) {
-		throw new Error('execute_command requires a non-empty "command".');
+		throw new Error('shell_execute requires a non-empty "command".');
 	}
 
 	const approved = await context.requestApproval(
-		'Confirm execute_command (y/n)',
+		'Confirm shell_execute (y/n)',
 		`Command: ${arguments_['command']}`,
 	);
 
 	if (!approved) {
-		const denied = 'User denied execute_command.';
+		const denied = 'User denied shell_execute.';
 		context.appendLog({
-			title: `Tool execute_command(${arguments_['command']})`,
+			title: `Tool shell_execute(${arguments_['command']})`,
 			content: denied,
 			type: 'tool',
 		});
@@ -44,7 +44,7 @@ export const executeCommand: ToolHandler = async (
 		].join('\n\n');
 
 		context.appendLog({
-			title: `Tool execute_command(${arguments_['command']})`,
+			title: `Tool shell_execute(${arguments_['command']})`,
 			content: result,
 			type: 'tool',
 		});
@@ -67,7 +67,7 @@ export const executeCommand: ToolHandler = async (
 		].join('\n\n');
 
 		context.appendLog({
-			title: `Tool execute_command(${arguments_['command']})`,
+			title: `Tool shell_execute(${arguments_['command']})`,
 			content: result,
 			type: 'tool',
 		});
