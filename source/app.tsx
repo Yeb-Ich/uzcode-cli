@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {Box, Text} from 'ink';
+import {Box} from 'ink';
 import type {LogItem, PendingApproval, Role, AppProps} from './types/index.js';
 import {createClient} from './agent/client.js';
 import {SYSTEM_PROMPT} from './agent/prompt.js';
@@ -8,6 +8,9 @@ import LogPanel from './ui/log-panel.js';
 import ApprovalPanel from './ui/approval-panel.js';
 import SpinnerRow from './ui/spinner-row.js';
 import PromptInput from './ui/prompt-input.js';
+import Banner from './ui/banner.js';
+
+const VERSION = '0.14.5';
 
 export default function App({
 	initialPrompt = '',
@@ -124,9 +127,7 @@ export default function App({
 
 	return (
 		<Box flexDirection="column" padding={1}>
-			<Box borderStyle="round" borderColor="blue" paddingX={1} marginBottom={1}>
-				<Text color="blue">Local LLM Agent | model: {model}</Text>
-			</Box>
+			<Banner model={model} version={VERSION} />
 
 			<LogPanel items={logs} />
 			<ApprovalPanel pending={pendingApproval} />

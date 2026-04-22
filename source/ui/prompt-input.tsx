@@ -17,19 +17,31 @@ export default function PromptInput({
 	pendingApproval,
 }: Props) {
 	return (
-		<Box borderStyle="round" borderColor="gray" paddingX={1}>
-			<Box flexDirection="column" width="100%">
-				<Text color="green">Prompt / Confirmation input:</Text>
-				<TextInput
-					value={value}
-					onChange={onChange}
-					onSubmit={onSubmit}
-					placeholder={
-						pendingApproval
-							? 'Type y or n...'
-							: 'Describe the task for the agent and press Enter...'
-					}
-				/>
+		<Box
+			borderStyle="bold"
+			borderColor="magenta"
+			paddingX={1}
+			marginTop={1}
+		>
+			<Box flexDirection="row" width="100%">
+				<Text color="magenta" bold>{' >_ '}</Text>
+				<Box flexDirection="column" flexGrow={1}>
+					{pendingApproval && (
+						<Text color="magenta" dimColor>
+							{pendingApproval.title}: {pendingApproval.details}
+						</Text>
+					)}
+					<TextInput
+						value={value}
+						onChange={onChange}
+						onSubmit={onSubmit}
+						placeholder={
+							pendingApproval
+								? 'Type y or n...'
+								: 'Describe the task for the agent and press Enter...'
+						}
+					/>
+				</Box>
 			</Box>
 		</Box>
 	);
