@@ -2,13 +2,13 @@ import type {ToolHandlers} from '../types/index.js';
 import {listFiles} from './list-files.js';
 import {readFile} from './read-file.js';
 import {writeFile} from './write-file.js';
-import {shellExecute} from './execute-command.js';
+import {executeCommand} from './execute-command.js';
 
 export const toolHandlers: ToolHandlers = {
 	list_files: listFiles,
 	read_file: readFile,
 	write_file: writeFile,
-	shell_execute: shellExecute,
+	execute_command: executeCommand,
 };
 
 export const TOOL_DEFINITIONS = [
@@ -20,12 +20,12 @@ export const TOOL_DEFINITIONS = [
 			parameters: {
 				type: 'object',
 				properties: {
-					directory: {
+					path: {
 						type: 'string',
 						description: 'Directory path to inspect.',
 					},
 				},
-				required: ['directory'],
+				required: ['path'],
 				additionalProperties: false,
 			},
 		},
@@ -74,7 +74,7 @@ export const TOOL_DEFINITIONS = [
 	{
 		type: 'function' as const,
 		function: {
-			name: 'shell_execute',
+			name: 'execute_command',
 			description:
 				'Execute shell command and return stdout/stderr. Requires explicit user confirmation in CLI.',
 			parameters: {

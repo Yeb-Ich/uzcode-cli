@@ -26,8 +26,10 @@ export default function LogPanel({items}: Props) {
 					paddingX={1}
 					marginBottom={1}
 				>
-					<Text color={colorByType[item.type]}>{item.title}</Text>
-					<Text>{item.content}</Text>
+					<Text color={colorByType[item.type]} dimColor={item.type === 'reasoning'}>
+						{item.title}
+					</Text>
+					<Text dimColor={item.type === 'reasoning'}>{item.content}</Text>
 				</Box>
 			))}
 		</>

@@ -6,7 +6,8 @@ import {fileURLToPath} from 'node:url';
 import type {LogItem, PendingApproval, Role, AppProps} from './types/index.js';
 import {createClient} from './agent/client.js';
 import {SYSTEM_PROMPT} from './agent/prompt.js';
-import {runAgentLoop} from './agent/loop.js';
+import {processChat} from './agent/loop.js';
+import {listFiles} from './tools/list-files.js';
 import LogPanel from './ui/log-panel.js';
 import ApprovalPanel from './ui/approval-panel.js';
 import SpinnerRow from './ui/spinner-row.js';
@@ -45,6 +46,7 @@ export default function App({
 	const [isWaitingModel, setIsWaitingModel] = useState(false);
 	const [pendingApproval, setPendingApproval] = useState<PendingApproval | undefined>();
 	const [logs, setLogs] = useState<LogItem[]>([]);
+	const [isIndexed, setIsIndexed] = useState(false);
 	const logIdRef = useRef(1);
 
 	const client = useMemo(() => createClient(), []);
@@ -85,7 +87,6 @@ export default function App({
 
 			const messages: Array<Record<string, unknown>> = [
 				{role: 'system' as Role, content: SYSTEM_PROMPT},
-				{role: 'user' as Role, content: prompt},
 			];
 
 			const context = {
@@ -94,7 +95,17 @@ export default function App({
 			};
 
 			try {
-				await runAgentLoop(client, model, messages, context, setIsWaitingModel);
+				if (!isIndexed) {
+					const indexResult = await listFiles({path: '.'}, context);
+					messages.push({
+						role: 'system' as Role,
+						content: `Project index:\n${indexResult}`,
+					});
+					setIsIndexed(true);
+				}
+
+				messages.push({role: 'user' as Role, content: prompt});
+				await processChat(client, model, messages, context, setIsWaitingModel);
 			} catch (error_) {
 				const error = error_ as Error;
 				appendLog({
@@ -107,7 +118,7 @@ export default function App({
 				setIsRunning(false);
 			}
 		},
-		[appendLog, client, model, requestApproval],
+		[appendLog, client, isIndexed, model, requestApproval],
 	);
 
 	const onSubmit = useCallback(

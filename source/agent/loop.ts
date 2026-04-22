@@ -60,7 +60,7 @@ function getReasoningContent(message: unknown): string {
 	return '';
 }
 
-export async function runAgentLoop(
+export async function processChat(
 	client: OpenAI,
 	model: string,
 	messages: Array<Record<string, unknown>>,
@@ -88,7 +88,7 @@ export async function runAgentLoop(
 	const reasoning = getReasoningContent(message);
 	if (reasoning) {
 		context.appendLog({
-			title: 'Reasoning',
+			title: '🤔 Думаю...',
 			content: reasoning,
 			type: 'reasoning',
 		});
@@ -154,5 +154,5 @@ export async function runAgentLoop(
 		}
 	}
 
-	return runAgentLoop(client, model, nextMessages, context, onWaitingChange);
+	return processChat(client, model, nextMessages, context, onWaitingChange);
 }

@@ -3,12 +3,15 @@ import type {ToolHandler, ToolContext} from '../types/index.js';
 import {buildDirectoryTree} from './file-tree.js';
 
 export const listFiles: ToolHandler = async (arguments_, context: ToolContext) => {
-	const directory = typeof arguments_['directory'] === 'string' ? arguments_['directory'] : '.';
-	const absolutePath = path.resolve(process.cwd(), directory);
+	const targetPath =
+		typeof arguments_['path'] === 'string'
+			? arguments_['path']
+			: (typeof arguments_['directory'] === 'string' ? arguments_['directory'] : '.');
+	const absolutePath = path.resolve(process.cwd(), targetPath);
 	const tree = await buildDirectoryTree(absolutePath);
 	const result = `Directory: ${absolutePath}\n${tree.join('\n')}`;
 	context.appendLog({
-		title: `Tool list_files(${directory})`,
+		title: `🔍 Сканирую проект: ${targetPath}`,
 		content: result,
 		type: 'tool',
 	});

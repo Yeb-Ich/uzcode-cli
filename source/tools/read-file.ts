@@ -11,7 +11,7 @@ export const readFile: ToolHandler = async (arguments_, context: ToolContext) =>
 	const content = await fs.readFile(absolutePath, 'utf8');
 	const result = `Path: ${absolutePath}\n\n${content}`;
 	context.appendLog({
-		title: `Tool read_file(${arguments_['path']})`,
+		title: `🔍 Читаю файл: ${arguments_['path']}`,
 		content,
 		type: 'tool',
 	});

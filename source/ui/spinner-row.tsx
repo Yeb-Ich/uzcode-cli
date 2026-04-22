@@ -14,7 +14,7 @@ export default function SpinnerRow({active}: Props) {
 	return (
 		<Box marginBottom={1}>
 			<Text color="yellow">
-				<Spinner type="dots" /> Waiting for model response...
+				<Spinner type="dots" /> 🤔 Думаю...
 			</Text>
 		</Box>
 	);
