@@ -1,5 +1,5 @@
 import React from 'react';
-import {Box, Text} from 'ink';
+import {Box, Static, Text} from 'ink';
 import type {LogItem} from '../types/index.js';
 
 const colorByType: Record<LogItem['type'], string> = {
@@ -16,8 +16,8 @@ type Props = {
 
 export default function LogPanel({items}: Props) {
 	return (
-		<>
-			{items.map(item => (
+		<Static items={items}>
+			{item => (
 				<Box
 					key={item.id}
 					flexDirection="column"
@@ -25,13 +25,14 @@ export default function LogPanel({items}: Props) {
 					borderColor={colorByType[item.type]}
 					paddingX={1}
 					marginBottom={1}
+					minHeight={item.type === 'reasoning' ? 4 : undefined}
 				>
 					<Text color={colorByType[item.type]} dimColor={item.type === 'reasoning'}>
 						{item.title}
 					</Text>
 					<Text dimColor={item.type === 'reasoning'}>{item.content}</Text>
 				</Box>
-			))}
-		</>
+			)}
+		</Static>
 	);
 }

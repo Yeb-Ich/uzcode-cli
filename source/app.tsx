@@ -48,6 +48,7 @@ export default function App({
 	const [logs, setLogs] = useState<LogItem[]>([]);
 	const [isIndexed, setIsIndexed] = useState(false);
 	const logIdRef = useRef(1);
+	const historyRef = useRef<Array<Record<string, unknown>>>([]);
 
 	const client = useMemo(() => createClient(), []);
 
@@ -85,8 +86,10 @@ export default function App({
 				type: 'system',
 			});
 
+			const historyTail = historyRef.current.slice(-10);
 			const messages: Array<Record<string, unknown>> = [
 				{role: 'system' as Role, content: SYSTEM_PROMPT},
+				...historyTail,
 			];
 
 			const context = {
@@ -105,7 +108,14 @@ export default function App({
 				}
 
 				messages.push({role: 'user' as Role, content: prompt});
-				await processChat(client, model, messages, context, setIsWaitingModel);
+				const result = await processChat(
+					client,
+					model,
+					messages,
+					context,
+					setIsWaitingModel,
+				);
+				historyRef.current = result.messages.slice(-30);
 			} catch (error_) {
 				const error = error_ as Error;
 				appendLog({
@@ -164,15 +174,17 @@ export default function App({
 		<Box flexDirection="column" padding={1}>
 			<Banner model={model} currentVersion={VERSION} />
 
-			<LogPanel items={logs} />
-			<ApprovalPanel pending={pendingApproval} />
-			<SpinnerRow active={isWaitingModel} />
-			<PromptInput
-				value={input}
-				onChange={setInput}
-				onSubmit={onSubmit}
-				pendingApproval={pendingApproval}
-			/>
+			<Box flexDirection="column" flexGrow={1}>
+				<LogPanel items={logs} />
+				<ApprovalPanel pending={pendingApproval} />
+				<SpinnerRow active={isWaitingModel} />
+				<PromptInput
+					value={input}
+					onChange={setInput}
+					onSubmit={onSubmit}
+					pendingApproval={pendingApproval}
+				/>
+			</Box>
 		</Box>
 	);
 }

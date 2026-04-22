@@ -2,6 +2,11 @@ import type OpenAI from 'openai';
 import type {Role, ToolContext} from '../types/index.js';
 import {TOOL_DEFINITIONS, toolHandlers} from '../tools/index.js';
 
+type ProcessChatResult = {
+	finalAnswer: string;
+	messages: Array<Record<string, unknown>>;
+};
+
 function parseToolArguments(rawArguments: string | undefined): Record<string, unknown> {
 	if (!rawArguments?.trim()) {
 		return {};
@@ -60,13 +65,34 @@ function getReasoningContent(message: unknown): string {
 	return '';
 }
 
+function shouldForceToolFallback(text: string): boolean {
+	const normalized = text.toLowerCase();
+	const patterns = [
+		'write_file',
+		'execute_command',
+		'read_file',
+		'list_files',
+		'запиш',
+		'сохрани',
+		'создай файл',
+		'write it to file',
+		'save it to file',
+		'run command',
+		'выполни команд',
+		'read file',
+		'прочитай файл',
+	];
+
+	return patterns.some(pattern => normalized.includes(pattern));
+}
+
 export async function processChat(
 	client: OpenAI,
 	model: string,
 	messages: Array<Record<string, unknown>>,
 	context: ToolContext,
 	onWaitingChange: (waiting: boolean) => void,
-): Promise<string> {
+): Promise<ProcessChatResult> {
 	onWaitingChange(true);
 
 	const completion = await client.chat.completions.create({
@@ -82,7 +108,10 @@ export async function processChat(
 	const message = choice?.message;
 
 	if (!message) {
-		return 'No response from model.';
+		return {
+			finalAnswer: 'No response from model.',
+			messages,
+		};
 	}
 
 	const reasoning = getReasoningContent(message);
@@ -97,12 +126,59 @@ export async function processChat(
 	const toolCalls = message.tool_calls ?? [];
 	if (toolCalls.length === 0) {
 		const finalAnswer = safeContent(message.content) || 'Done.';
+		const assistantMessage = {
+			role: 'assistant' as Role,
+			content: finalAnswer,
+		};
+
+		if (shouldForceToolFallback(finalAnswer)) {
+			onWaitingChange(true);
+			const fallbackCompletion = await client.chat.completions.create({
+				model,
+				messages: [
+					...messages,
+					assistantMessage,
+					{
+						role: 'system' as Role,
+						content:
+							'You described an action. Call the appropriate tool now using tool_calls only.',
+					},
+				] as never,
+				tools: TOOL_DEFINITIONS,
+				tool_choice: 'auto',
+			});
+			onWaitingChange(false);
+
+			const fallbackMessage = fallbackCompletion.choices[0]?.message;
+			const fallbackToolCalls = fallbackMessage?.tool_calls ?? [];
+			if (fallbackToolCalls.length > 0) {
+				return processChat(
+					client,
+					model,
+					[
+						...messages,
+						assistantMessage,
+						{
+							role: 'assistant' as Role,
+							content: safeContent(fallbackMessage?.content),
+							tool_calls: fallbackToolCalls,
+						},
+					],
+					context,
+					onWaitingChange,
+				);
+			}
+		}
+
 		context.appendLog({
 			title: 'Assistant',
 			content: finalAnswer,
 			type: 'assistant',
 		});
-		return finalAnswer;
+		return {
+			finalAnswer,
+			messages: [...messages, assistantMessage],
+		};
 	}
 
 	const nextMessages = [
