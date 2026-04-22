@@ -8,19 +8,19 @@ export const executeCommand: ToolHandler = async (
 	arguments_,
 	context: ToolContext,
 ) => {
-	if (typeof arguments_.command !== 'string' || arguments_.command.trim().length === 0) {
+	if (typeof arguments_['command'] !== 'string' || arguments_['command'].trim().length === 0) {
 		throw new Error('execute_command requires a non-empty "command".');
 	}
 
 	const approved = await context.requestApproval(
 		'Confirm execute_command (y/n)',
-		`Command: ${arguments_.command}`,
+		`Command: ${arguments_['command']}`,
 	);
 
 	if (!approved) {
 		const denied = 'User denied execute_command.';
 		context.appendLog({
-			title: `Tool execute_command(${arguments_.command})`,
+			title: `Tool execute_command(${arguments_['command']})`,
 			content: denied,
 			type: 'tool',
 		});
@@ -28,7 +28,7 @@ export const executeCommand: ToolHandler = async (
 	}
 
 	try {
-		const {stdout, stderr} = await exec(arguments_.command, {
+		const {stdout, stderr} = await exec(arguments_['command'], {
 			cwd: process.cwd(),
 			timeout: 120_000,
 			maxBuffer: 1024 * 1024,
@@ -37,14 +37,14 @@ export const executeCommand: ToolHandler = async (
 		});
 
 		const result = [
-			`Command: ${arguments_.command}`,
+			`Command: ${arguments_['command']}`,
 			'Exit code: 0',
 			`stdout:\n${stdout || '(empty)'}`,
 			`stderr:\n${stderr || '(empty)'}`,
 		].join('\n\n');
 
 		context.appendLog({
-			title: `Tool execute_command(${arguments_.command})`,
+			title: `Tool execute_command(${arguments_['command']})`,
 			content: result,
 			type: 'tool',
 		});
@@ -59,7 +59,7 @@ export const executeCommand: ToolHandler = async (
 		};
 
 		const result = [
-			`Command: ${arguments_.command}`,
+			`Command: ${arguments_['command']}`,
 			`Exit code: ${String(error.code ?? 'unknown')}`,
 			`stdout:\n${error.stdout || '(empty)'}`,
 			`stderr:\n${error.stderr || '(empty)'}`,
@@ -67,7 +67,7 @@ export const executeCommand: ToolHandler = async (
 		].join('\n\n');
 
 		context.appendLog({
-			title: `Tool execute_command(${arguments_.command})`,
+			title: `Tool execute_command(${arguments_['command']})`,
 			content: result,
 			type: 'tool',
 		});
