@@ -37,7 +37,8 @@ source/
 
 - **Node.js** >= 18
 - **LM Studio** running with a loaded model (e.g. `qwen/qwen3-14b`)
-  - Server address: `http://127.0.0.1:1234/v1`
+  - Local network server address (default): `http://192.168.0.240:1234/v1`
+  - Optional override via env: `UZCODE_LM_STUDIO_BASE_URL`
 
 ## Install from source
 

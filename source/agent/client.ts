@@ -1,8 +1,9 @@
 import OpenAI from 'openai';
+import {getLmStudioBaseUrl} from '../config/network.js';
 
 export function createClient(): OpenAI {
 	return new OpenAI({
-		baseURL: 'http://127.0.0.1:1234/v1',
+		baseURL: getLmStudioBaseUrl(),
 		apiKey: 'lms',
 	});
 }

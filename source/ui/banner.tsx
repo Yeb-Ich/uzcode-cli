@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Box, Text} from 'ink';
 import axios from 'axios';
+import {getLmStudioModelsUrl} from '../config/network.js';
 
 type Props = {
 	model: string;
@@ -28,7 +29,7 @@ const LOGO = [
 	'@@@&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&X&X@@@',
 ];
 
-const LM_STUDIO_URL = 'http://localhost:1234/v1/models';
+const LM_STUDIO_URL = getLmStudioModelsUrl();
 const GITHUB_RELEASES_URL =
 	'https://api.github.com/repos/Yeb-Ich/uzcode-cli/releases/latest';
 
